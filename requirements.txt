@@ -1,0 +1,2 @@
+oslo.messaging>=1.4.0
+eventlet>=0.16.1
