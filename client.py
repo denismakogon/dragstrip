@@ -57,7 +57,7 @@ def main():
     args = parser.parse_args()
 
 
-    transport_url = "rabbit://%(login)s:%(pass)s@%(host)s:%(port)s" % {
+    transport_url = "rabbit://%(login)s:%(pass)s@%(host)s:%(port)s,127.0.0.1:5672" % {
                     'login': args.login,
                     'pass': args.password,
                     'host': args.transport_ip,
