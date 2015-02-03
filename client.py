@@ -1,10 +1,16 @@
 #!/usr/bin/env python
-'''
-Created on Dec 4, 2014
+"""RabbitMQ oslo.messaging driver load testing tool client.
+Usage.
+------
 
-@author: ozamiatin
-@co-authored Pekelny I159 Ilya
-'''
+Start the client after starting the server. You should use strictly the same
+server and transport urls as the server using, otherwise message delivery will
+be mutely impossible. Before starting the tool, please ensure your env has the
+default port and user credentials. If it doesn't use the appropriate cli
+options to pass a correct values.
+
+    ./client.py --t 10 --c 100 --serv_ip 1**.**.***.** --trans_ip 1**.**.***.**
+"""
 
 import argparse
 import logging
@@ -22,6 +28,9 @@ logging.basicConfig()
 eventlet.monkey_patch()
 
 class OMClient(messaging.RPCClient):
+    """Simple RPC client. It can be changed to do some delays or something like
+    that.
+    """
     def callA(self, context, args):
         self.call(context, 'methodA')
 
@@ -30,6 +39,7 @@ class OMClient(messaging.RPCClient):
 
 
 def run(client, context, call_num):
+    """The callback to spawn client green threads."""
     for i in range(0, call_num):
         print 'Client cast ', i
         client.castB(context, {})
@@ -46,12 +56,15 @@ def main():
     parser.add_argument('--c', dest='call_number',
         required=True, type=types.IntType)
 
-    # Server and transport ips
-    parser.add_argument('--serv_ip', dest='server_ip', default='127.0.0.1')
+    # Server ip and port
+    parser.add_argument('--serv_ip', dest='server_ip', default='127.0.0.1',
+        help="This option must has the same value as server used for "
+             "connection. Otherwise messages can't be delivered.")
+    # Transport ip and port
     parser.add_argument('--trans_p', dest='transport_port',
         default=5672, type=types.IntType)
     parser.add_argument('--trans_ip', dest='transport_ip', default='127.0.0.1')
-
+    # Rabbit credentials
     parser.add_argument('--l', dest='login', default='guest')
     parser.add_argument('--s', dest='password', default='guest')
     args = parser.parse_args()
