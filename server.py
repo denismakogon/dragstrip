@@ -1,19 +1,8 @@
 #!/usr/bin/env python
-"""RabbitMQ oslo.messaging driver load testing tool server.
-Usage.
-------
-
-Start the server before the client starting. The server prints used transport 
-and server ips and ports at starting. Please use the taken from the server
-starting output ips and ports to start the appropriate client arguments.
-
-You can start server without args if your RabbitMQ env using the default
-credentials and port.
-
-"""
 
 import argparse
 import logging
+import json
 import netifaces
 import sys
 import threading
@@ -24,10 +13,10 @@ import eventlet
 from oslo.config import cfg
 from oslo import messaging
 
-from common import cred
 
 logging.basicConfig()
 eventlet.monkey_patch()
+
 
 class Enpoint(object):
     """Simulated an application to be called from messaging."""
@@ -39,38 +28,51 @@ class Enpoint(object):
         print 'Method B is called on an end point'
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    # Ports
-    parser.add_argument('--serv_p', dest='server_port', default='5672')
-    parser.add_argument('--trans_p', dest='transport_port',
-        default=5672, type=types.IntType)
-    # Credentials
-    parser.add_argument('--l', dest='login', default='guest')
-    parser.add_argument('--s', dest='password', default='guest')
-    args = parser.parse_args()
-
+def _get_public_ip():
     not_local = lambda x: x and not x.startswith('127')
     inet_addr = lambda x: x is not None and x[0]['addr']
     ifaces = lambda x: netifaces.ifaddresses(x).get(netifaces.AF_INET)
 
-    # Get internal IP to start the server
-    addr = filter(
+    return filter(
         not_local, map(inet_addr, map(ifaces, netifaces.interfaces())))[0]
 
+
+def _register_opts(conf):
+    opts = [cfg.StrOpt('server_ip', short="si", default=_get_public_ip()),
+            cfg.IntOpt('server_port', short="sp"),
+            cfg.StrOpt('transport_ip', short="ti", default=_get_public_ip()),
+            cfg.IntOpt('transport_port', short="tp"),
+            cfg.StrOpt('login', short="l"),
+            cfg.StrOpt('password', short="p")]
+    conf.register_cli_opts(opts)
+    conf(default_config_files=['rpc.conf', ])
+    return conf
+
+
+def _get_server(conf):
     transport_url = "rabbit://%(login)s:%(pass)s@%(host)s:%(port)s" % {
-                    'login': args.login,
-                    'pass': args.password,
-                    'host': addr,
-                    'port': args.transport_port
+                    'login': conf.login,
+                    'pass': conf.password,
+                    'host': conf.transport_ip,
+                    'port': conf.transport_port
                     }
+    server_url = "%s:%s" % (conf.server_ip, conf.server_port)
 
     transport = messaging.get_transport(cfg.CONF, url=transport_url)
-    target = messaging.Target(topic='om-client', server=addr)
+    target = messaging.Target(topic='om-client', server=server_url)
     endpoints = [Enpoint(), ]
-    server = messaging.get_rpc_server(
+    return messaging.get_rpc_server(
         transport, target, endpoints, executor='eventlet')
+
+
+def main():
+    conf = _register_opts(cfg.CONF)
+    server = _get_server(conf)
+
     print "Starting server"
+    print (
+        "Please, use %s as client --serv_ip, and %s as client --serv_p values"
+        ) % (conf.server_ip, conf.server_port)
     try:
         server.start()
         server.wait()

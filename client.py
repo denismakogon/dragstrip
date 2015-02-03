@@ -1,17 +1,4 @@
 #!/usr/bin/env python
-"""RabbitMQ oslo.messaging driver load testing tool client.
-Usage.
-------
-
-Start the client after starting the server. You should use strictly the same
-server and transport urls as the server using, otherwise message delivery will
-be mutely impossible. Before starting the tool, please ensure your env has the
-default port and user credentials. If it doesn't use the appropriate cli
-options to pass a correct values.
-
-    ./client.py --t 10 --c 100 --serv_ip 1**.**.***.** --trans_ip 1**.**.***.**
-"""
-
 import argparse
 import logging
 import sys
@@ -22,10 +9,10 @@ import eventlet
 from oslo import messaging
 from oslo.config import cfg
 
-from common import cred
 
 logging.basicConfig()
 eventlet.monkey_patch()
+
 
 class OMClient(messaging.RPCClient):
     """Simple RPC client. It can be changed to do some delays or something like
@@ -38,7 +25,7 @@ class OMClient(messaging.RPCClient):
         self.cast(context, 'methodB', **args)
 
 
-def run(client, context, call_num):
+def _run(client, context, call_num):
     """The callback to spawn client green threads."""
     for i in range(0, call_num):
         print 'Client cast ', i
@@ -47,59 +34,59 @@ def run(client, context, call_num):
         client.callA(context, {})
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def _register_opts(conf):
+    opts = [cfg.StrOpt('server_ip', short="si"),
+            cfg.IntOpt('server_port', short="sp"),
+            cfg.StrOpt('transport_ip', short="ti"),
+            cfg.IntOpt('transport_port', short="tp"),
+            cfg.StrOpt('login', short="l"),
+            cfg.StrOpt('password', short="p"),
+            cfg.IntOpt('call_num', short="c"),
+            cfg.IntOpt('thread_num', short="t")]
 
-    # Call params
-    parser.add_argument('--t', dest='threads_number',
-        default=1, type=types.IntType)
-    parser.add_argument('--c', dest='call_number',
-        required=True, type=types.IntType)
-
-    # Server ip and port
-    parser.add_argument('--serv_ip', dest='server_ip', default='127.0.0.1',
-        help="This option must has the same value as server used for "
-             "connection. Otherwise messages can't be delivered.")
-    # Transport ip and port
-    parser.add_argument('--trans_p', dest='transport_port',
-        default=5672, type=types.IntType)
-    parser.add_argument('--trans_ip', dest='transport_ip', default='127.0.0.1')
-    # Rabbit credentials
-    parser.add_argument('--l', dest='login', default='guest')
-    parser.add_argument('--s', dest='password', default='guest')
-    args = parser.parse_args()
+    conf.register_cli_opts(opts)
+    conf(default_config_files=['rpc.conf'], )
+    return conf
 
 
-    transport_url = "rabbit://%(login)s:%(pass)s@%(host)s:%(port)s,127.0.0.1:5672" % {
-                    'login': args.login,
-                    'pass': args.password,
-                    'host': args.transport_ip,
-                    'port': args.transport_port
+def _get_client(conf):
+    transport_url = "rabbit://%(login)s:%(pass)s@%(host)s:%(port)s" % {
+                    'login': conf.login,
+                    'pass': conf.password,
+                    'host': conf.transport_ip,
+                    'port': conf.transport_port
                     }
-    transport = messaging.get_transport(cfg.CONF, url=transport_url)
-    target = messaging.Target(topic='om-client', server=args.server_ip)
-    client = OMClient(transport, target)
+    server_addr = "%s:%s" % (conf.server_ip, conf.server_port)
 
+    transport = messaging.get_transport(cfg.CONF, url=transport_url)
+    target = messaging.Target(topic='om-client', server=server_addr)
+    return OMClient(transport, target)
+
+
+def _spawn_threads(conf, client):
     test_context = {"application": "oslo.messenger-server",
                     "time": time.ctime(),
                     "cast": False}
 
-    threads = [eventlet.spawn(
-        run, client, test_context, args.call_number) for i in range(
-            0, args.threads_number)]
+    call_n = 0
+    while call_n < conf.thread_num:
+        call_n = call_n + 1
+        yield eventlet.spawn(_run, client, test_context, conf.call_num)
+
+
+def main():
+    conf = _register_opts(cfg.CONF)
+    threads = list(_spawn_threads(conf, _get_client(conf)))
     try:
-        for i in threads:
-            i.wait()
+        for th in threads:
+            th.wait()
     except KeyboardInterrupt:
-        for i in threads:
-            i.kill()
-        print 'Ctrl+C exit'
+        for th in threads:
+            th.kill()
+        print '<Ctrl>+c exit'
     except Exception as e:
         print e
         raise
-
-
-    print 'Client Quitting ...'
     return 0
 
 
