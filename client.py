@@ -7,7 +7,8 @@ import types
 
 import eventlet
 from oslo import messaging
-from oslo.config import cfg
+
+from options import conf
 
 
 logging.basicConfig()
@@ -32,21 +33,6 @@ def _run(client, context, call_num):
         client.castB(context, {})
         print 'Client call: ', i
         client.callA(context, {})
-
-
-def _register_opts(conf):
-    opts = [cfg.StrOpt('server_ip', short="si"),
-            cfg.IntOpt('server_port', short="sp"),
-            cfg.StrOpt('transport_ip', short="ti"),
-            cfg.IntOpt('transport_port', short="tp"),
-            cfg.StrOpt('login', short="l"),
-            cfg.StrOpt('password', short="p"),
-            cfg.IntOpt('call_num', short="c"),
-            cfg.IntOpt('thread_num', short="t")]
-
-    conf.register_cli_opts(opts)
-    conf(default_config_files=['rpc.conf'], )
-    return conf
 
 
 def _get_client(conf):
@@ -75,7 +61,6 @@ def _spawn_threads(conf, client):
 
 
 def main():
-    conf = _register_opts(cfg.CONF)
     threads = list(_spawn_threads(conf, _get_client(conf)))
     try:
         for th in threads:

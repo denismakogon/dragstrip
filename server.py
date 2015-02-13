@@ -37,15 +37,9 @@ def _get_public_ip():
         not_local, map(inet_addr, map(ifaces, netifaces.interfaces())))[0]
 
 
-def _register_opts(conf):
-    opts = [cfg.StrOpt('server_ip', short="si", default=_get_public_ip()),
-            cfg.IntOpt('server_port', short="sp"),
-            cfg.StrOpt('transport_ip', short="ti", default=_get_public_ip()),
-            cfg.IntOpt('transport_port', short="tp"),
-            cfg.StrOpt('login', short="l"),
-            cfg.StrOpt('password', short="p")]
-    conf.register_cli_opts(opts)
-    conf(default_config_files=['rpc.conf', ])
+def _set_opts(conf):
+    conf.set_defaults(conf,
+        server_ip=_get_public_ip(), transport_ip=_get_public_ip())
     return conf
 
 
@@ -66,7 +60,7 @@ def _get_server(conf):
 
 
 def main():
-    conf = _register_opts(cfg.CONF)
+    conf = _set_opts(cfg.CONF)
     server = _get_server(conf)
 
     print "Starting server"
