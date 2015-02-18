@@ -11,7 +11,8 @@ def _register_opts():
             cfg.StrOpt('password', short="p"),
             cfg.IntOpt('management_port', short="mp"),
             cfg.IntOpt('call_num', short="c"),
-            cfg.IntOpt('thread_num', short="t")]
+            cfg.IntOpt('thread_num', short="t"),
+            cfg.ListOpt('foreign_nodes', short='fn')]
 
     conf.register_cli_opts(opts)
     conf(default_config_files=['rpc.conf'], )

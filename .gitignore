@@ -1,1 +1,5 @@
-.DS_Store .project .pydevproject *.pro.user *.pyc *.log
+*.pyc
+*.log
+*.swo
+*.swp
+.cache/*
