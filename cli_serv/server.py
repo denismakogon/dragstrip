@@ -5,18 +5,15 @@ import logging
 import json
 import netifaces
 import sys
-import threading
 import types
 import uuid, time
 
-import eventlet
 from oslo import messaging
 
 import options
 
 
 logging.basicConfig()
-eventlet.monkey_patch()
 
 
 class Enpoint(object):
@@ -39,12 +36,14 @@ def _get_public_ip():
 
 
 def _set_opts(conf):
-    conf.set_defaults(conf,
-        server_ip=_get_public_ip(), transport_ip=_get_public_ip())
+    override = _get_public_ip()
+    conf.set_override(name='server_ip', override=override)
+    conf.set_override(name='transport_ip', override=override)
     return conf
 
 
-def _get_server(conf):
+def get_server(conf):
+    conf = _set_opts(conf)
     transport_url = "rabbit://%(login)s:%(pass)s@%(host)s:%(port)s" % {
                     'login': conf.login,
                     'pass': conf.password,
@@ -58,24 +57,3 @@ def _get_server(conf):
     endpoints = [Enpoint(), ]
     return messaging.get_rpc_server(
         transport, target, endpoints, executor='eventlet')
-
-
-def main():
-    conf = options.conf
-    server = _get_server(conf)
-
-    print "Starting server"
-    print (
-        "Please, use %s as client --serv_ip, and %s as client --serv_p values"
-        ) % (conf.server_ip, conf.server_port)
-    try:
-        server.start()
-        server.wait()
-    except KeyboardInterrupt:
-        server.stop()
-    print "Quitting ..."
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())
