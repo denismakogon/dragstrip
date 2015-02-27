@@ -8,7 +8,7 @@ import types
 import eventlet
 from oslo import messaging
 
-from options import conf
+import options
 
 
 logging.basicConfig()
@@ -44,7 +44,7 @@ def _get_client(conf):
                     }
     server_addr = "%s:%s" % (conf.server_ip, conf.server_port)
 
-    transport = messaging.get_transport(cfg.CONF, url=transport_url)
+    transport = messaging.get_transport(conf, url=transport_url)
     target = messaging.Target(topic='om-client', server=server_addr)
     return OMClient(transport, target)
 
@@ -61,6 +61,7 @@ def _spawn_threads(conf, client):
 
 
 def main():
+    conf = options.conf
     threads = list(_spawn_threads(conf, _get_client(conf)))
     try:
         for th in threads:

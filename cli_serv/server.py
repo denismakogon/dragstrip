@@ -10,8 +10,9 @@ import types
 import uuid, time
 
 import eventlet
-from oslo.config import cfg
 from oslo import messaging
+
+import options
 
 
 logging.basicConfig()
@@ -52,7 +53,7 @@ def _get_server(conf):
                     }
     server_url = "%s:%s" % (conf.server_ip, conf.server_port)
 
-    transport = messaging.get_transport(cfg.CONF, url=transport_url)
+    transport = messaging.get_transport(conf, url=transport_url)
     target = messaging.Target(topic='om-client', server=server_url)
     endpoints = [Enpoint(), ]
     return messaging.get_rpc_server(
@@ -60,7 +61,7 @@ def _get_server(conf):
 
 
 def main():
-    conf = _set_opts(cfg.CONF)
+    conf = options.conf
     server = _get_server(conf)
 
     print "Starting server"
