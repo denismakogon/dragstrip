@@ -14,5 +14,5 @@ else
     pip install -r requirements.txt
 fi
 
-messenger=$(find ~ -type d -name messenger)
-export PYTHONPATH=$PYTHONPATH:$messenger
+dragstrip=$(find ~ -type d -name dragstrip)
+export PYTHONPATH=$PYTHONPATH:$dragstrip
