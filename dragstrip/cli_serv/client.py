@@ -7,13 +7,9 @@ import types
 
 from oslo import messaging
 
-import options
+from dragstrip import options
 
 class Client(messaging.RPCClient):
-    """Simple RPC client. It can be changed to do some delays or something like
-    that.
-    """
-
     _context = {"application": "oslo.messenger-server",
                "time": time.ctime(),
                "cast": False}

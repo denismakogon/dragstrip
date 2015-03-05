@@ -1,11 +1,14 @@
-import types
+import BaseHTTPServer
 import json
-import httplib2
+import types
 import socket
 import time
-import BaseHTTPServer
 
 import psutil
+import httplib2
+
+from dragstrip.statistician import log_utils
+
 
 def _is_pub_num(obj, key):
     """Filter payload from psutil object to dump JSON."""
@@ -56,7 +59,7 @@ def get_system_info(conf):
     """Aggregate system information from all the cluster."""
 
     sys_log = get_foreign_system_info(conf)
-    sys_log['localhost'] = json.loads(as_json(SYSTEM_LOG))
+    sys_log['localhost'] = json.loads(log_utils.as_json(log_utils.SYSTEM_LOG))
     return json.dumps(sys_log)
 
 
@@ -67,7 +70,7 @@ class SysLogHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        self.wfile.write(as_json(SYSTEM_LOG))
+        self.wfile.write(log_utils.as_json(log_utils.SYSTEM_LOG))
 
 
 def run_http():

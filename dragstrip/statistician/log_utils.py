@@ -2,7 +2,7 @@ import datetime
 import time
 import re
 
-from statistician import rabbit_log
+from dragstrip.statistician import rabbit_log
 
 
 RABBIT_LOG = 'rabbit.log'

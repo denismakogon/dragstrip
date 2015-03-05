@@ -1,6 +1,6 @@
+import json
 import time
 import types
-import json
 
 from plotly import graph_objs
 from plotly import plotly

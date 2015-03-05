@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-import logging
 import json
+import logging
 import netifaces
 import sys
 import types
@@ -11,7 +11,7 @@ import uuid, time
 from oslo import messaging
 from oslo.config import cfg
 
-import options
+from dragstrip import options
 
 
 logging.basicConfig()

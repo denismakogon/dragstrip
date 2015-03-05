@@ -1,3 +1,5 @@
+import os.path
+
 from oslo.config import cfg
 
 
@@ -20,7 +22,8 @@ def register(f):
 
         CONF.register_cli_opts(cli_opts)
         CONF.register_opts(opts)
-        CONF(default_config_files=['rpc.conf'], )
+        CONF(default_config_files=[
+            os.path.join(os.path.dirname(__file__), 'rpc.conf'), ])
         return CONF
     return wrap
 

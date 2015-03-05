@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-from statistician import log_utils
-from statistician import sys_log
-from statistician import plot
 import eventlet
-import options
+
+from dragstrip import options
+from dragstrip.statistician import log_utils
+from dragstrip.statistician import sys_log
+from dragstrip.statistician import plot
 
 
 def run_stat():
