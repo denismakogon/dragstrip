@@ -7,6 +7,9 @@ from dragstrip.statistician import sys_log
 from dragstrip.statistician import plot
 
 
+eventlet.monkey_patch()
+
+
 def run_stat():
     conf = options.register_stat_opts()
 

@@ -5,6 +5,9 @@ from dragstrip.cli_serv import client
 from dragstrip import options
 
 
+eventlet.monkey_patch()
+
+
 def run_client():
     conf = options.register_client_opts()
 

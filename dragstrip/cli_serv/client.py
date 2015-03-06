@@ -11,18 +11,18 @@ from dragstrip import options
 
 class Client(messaging.RPCClient):
     _context = {"application": "oslo.messenger-server",
-               "time": time.ctime(),
-               "cast": False}
+                "time": time.ctime(),
+                "cast": False}
 
     def __init__(self, conf, *args, **kwargs):
         self.conf = conf
         super(Client, self).__init__(*args, **kwargs)
 
     def _call(self, context, args):
-        self.call(self._context, 'Call method')
+        self.call(self._context, 'method_a')
 
     def _cast(self, context, args):
-        self.cast(self._context, 'Cast method', **args)
+        self.cast(self._context, 'method_b', **args)
 
     def run(self):
         """The callback to spawn client green threads."""

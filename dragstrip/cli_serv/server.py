@@ -3,6 +3,7 @@
 import argparse
 import json
 import logging
+import eventlet
 import netifaces
 import sys
 import types
@@ -15,15 +16,16 @@ from dragstrip import options
 
 
 logging.basicConfig()
+eventlet.monkey_patch()
 
 
 class Enpoint(object):
     """Simulated an application to be called from messaging."""
 
-    def methodA(self, *args, **kwargs):
+    def method_a(self, *args, **kwargs):
         print 'Method A is called on an end point'
 
-    def methodB(self, *args, **kwargs):
+    def method_b(self, *args, **kwargs):
         print 'Method B is called on an end point'
 
 
@@ -32,8 +34,10 @@ def _get_public_ip():
     inet_addr = lambda x: x is not None and x[0]['addr']
     ifaces = lambda x: netifaces.ifaddresses(x).get(netifaces.AF_INET)
 
-    return filter(
+    server_addr =  filter(
         not_local, map(inet_addr, map(ifaces, netifaces.interfaces())))[0]
+    print "Server url is %s" % server_addr
+    return server_addr
 
 
 def _set_opts(conf):
