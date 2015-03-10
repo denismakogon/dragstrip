@@ -28,11 +28,14 @@ class OMClient(messaging.RPCClient):
 
 def _run(client, context, call_num):
     """The callback to spawn client green threads."""
-    for i in range(0, call_num):
+    cond = lambda x: x < call_num if call_num else lambda x: True
+    i = 0
+    while cond(i):
         print 'Client cast ', i
         client.castB(context, {})
         print 'Client call: ', i
         client.callA(context, {})
+        i = i + 1
 
 
 def _get_client(conf):

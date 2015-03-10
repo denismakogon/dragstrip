@@ -111,7 +111,8 @@ def get_rabbit_overview(conf):
 
     requester = httplib2.Http(".cache")
     requester.add_credentials(name=conf.login, password=conf.password)
-    url = "http://%s:%d/api/overview" % (conf.transport_ip, conf.management_port)
+    url = "http://%s:%d/api/overview" % (conf.management_ip,
+                                         conf.management_port)
     resp, content = requester.request(
         url, "GET", headers={'content-type': 'application/json'})
     if resp.status != 200:

@@ -9,13 +9,14 @@ def _register_opts():
             cfg.IntOpt('transport_port', short="tp"),
             cfg.StrOpt('login', short="l"),
             cfg.StrOpt('password', short="p"),
-            cfg.IntOpt('management_port', short="mp"),
             cfg.IntOpt('call_num', short="c"),
             cfg.IntOpt('thread_num', short="t"),
             cfg.ListOpt('foreign_nodes', short='fn'),
             cfg.StrOpt('plotly_name', short='pln'),
             cfg.StrOpt('plotly_api_key', short='plk'),
-            cfg.BoolOpt('dynamic_charts', short='dc')]
+            cfg.BoolOpt('dynamic_charts', short='dc'),
+            cfg.IntOpt('management_port', short="mp"),
+            cfg.StrOpt('management_ip', short='ma')]
 
     conf.register_cli_opts(opts)
     conf(default_config_files=['rpc.conf'], )
