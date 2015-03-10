@@ -11,6 +11,7 @@ import uuid, time
 
 import eventlet
 from oslo import messaging
+from oslo.config import cfg
 
 import options
 
@@ -39,8 +40,9 @@ def _get_public_ip():
 
 
 def _set_opts(conf):
-    conf.set_defaults(conf,
-        server_ip=_get_public_ip(), transport_ip=_get_public_ip())
+    opts = conf._opts['server_ip']['opt'], conf._opts['server_ip']['opt']
+    local_ip = _get_public_ip()
+    cfg.set_defaults(opts, server_ip=local_ip, transport_ip=local_ip)
     return conf
 
 
@@ -61,7 +63,7 @@ def _get_server(conf):
 
 
 def main():
-    conf = options.conf
+    conf = _set_opts(options.conf)
     server = _get_server(conf)
 
     print "Starting server"
