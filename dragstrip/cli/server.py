@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from dragstrip.cli_serv import server
 from dragstrip import options
 
@@ -12,7 +11,3 @@ def run_server():
         serv.wait()
     except KeyboardInterrupt:
         serv.stop()
-
-
-if __name__ == '__main__':
-    run_server()

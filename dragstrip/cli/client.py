@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 import eventlet
 
 from dragstrip.cli_serv import client
 from dragstrip import options
-
 
 eventlet.monkey_patch()
 
@@ -22,6 +20,3 @@ def run_client():
     except KeyboardInterrupt:
         print "\nTerminated\n"
 
-
-if __name__ == '__main__':
-    run_client()

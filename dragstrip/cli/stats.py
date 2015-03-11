@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import eventlet
 
 from dragstrip import options
@@ -22,7 +21,3 @@ def run_stat():
         pool.waitall()
     except KeyboardInterrupt:
         print "\nTerminated\n"
-
-
-if __name__ == '__main__':
-    run_stat()
